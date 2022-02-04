@@ -1,9 +1,10 @@
 #pragma once
-#include "Arduino.h"
 #include "Rotator.h"
-#include "Buttons.h"
+#include "Arduino.h"
 
-Rotator::Rotator () {};
+#define AZ_INPUT_PIN A0
+
+Rotator::Rotator () {}
 
 String Rotator::int_to_right_string (uint16_t degreePosition) {
   String formattedDegrees = String (degreePosition);
@@ -48,14 +49,25 @@ String Rotator::degrees_to_route (uint16_t degreesPosition) {
   if (degreesPosition > 327 && degreesPosition <= 349)  return "NorNorOeste";
 }
 
-uint16_t Rotator::read_antenna_position () {
-  uint32_t rawSumma = 0;
-  for (uint8_t i = 1; i <= 100; i++) {
-    rawSumma += analogRead (AZ_INPUT_PIN);
-  }
-  
-  float rawMedia = rawSumma / 100.0;
-  float degreesRead = (rawMedia * 450.0) / 1023.0;
+void Rotator::init_io_buttons () {
+  pinMode (CCW_BUTTON_PIN, INPUT_PULLUP);
+  pinMode (CW_BUTTON_PIN, INPUT_PULLUP);
+  pinMode (SWITCH_ENCODER_PIN, INPUT_PULLUP);
+  pinMode (CCW_RELAY_PIN, OUTPUT);
+  pinMode (CW_RELAY_PIN, OUTPUT);
+  pinMode (SWITCH_ENCODER_PIN, INPUT_PULLUP);
 
-  return int( degreesRead);
+  digitalWrite (CCW_RELAY_PIN, HIGH);
+  digitalWrite (CW_RELAY_PIN, HIGH);
+}
+
+bool Rotator::button_pressed (byte button) {
+    bool pressed = digitalRead (button) == LOW;
+  
+  if (pressed) {
+    delay (200);
+    if (digitalRead (button) == LOW)
+      return true;
+  }
+  return false;
 }
